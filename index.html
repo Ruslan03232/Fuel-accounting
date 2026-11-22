@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Учёт топлива">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#0e6b5c">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Учёт топлива</title>
+<style>
+:root{--bg:#f3f1ec;--card:#fff;--ink:#1d2327;--mute:#6b747a;--line:#e3e0d8;--acc:#0e6b5c;--acc2:#e7f2ef;--warn:#c2410c;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#14181a;--card:#1f2528;--ink:#eef1f2;--mute:#97a1a7;--line:#2f373b;--acc:#4fc3ab;--acc2:#1b2f2b;--warn:#fb923c;color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding-bottom:calc(110px + env(safe-area-inset-bottom,0px));touch-action:manipulation}
+body.lock{position:fixed;left:0;right:0;width:100%;overflow:hidden}
+.wrap{max-width:600px;margin:0 auto;padding:0 18px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:14px 0 14px}
+h1{font-size:32px;letter-spacing:-.02em;margin:0}
+.more{flex:none;width:46px;height:46px;border-radius:23px;border:0;background:var(--card);color:var(--ink);font-size:24px;line-height:1;padding:0 0 6px}
+.seg{display:flex;background:var(--line);border-radius:11px;padding:2px;margin-bottom:14px}
+.seg button{flex:1;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;padding:9px 4px;border-radius:9px}
+.seg button.on{background:var(--card);font-weight:600;box-shadow:0 1px 2px rgba(0,0,0,.12)}
+.hero{background:var(--acc);color:#fff;border-radius:20px;padding:20px;margin-bottom:12px}
+@media (prefers-color-scheme:dark){.hero{background:var(--acc2);color:var(--ink);border:1px solid var(--line)}}
+.hero small{opacity:.8;font-size:14px}
+.hero .big{font-size:48px;font-weight:700;letter-spacing:-.03em;line-height:1.1}
+.hero .big span{font-size:17px;font-weight:500;opacity:.8;margin-left:6px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:22px}
+.st{background:var(--card);border-radius:16px;padding:13px 15px}
+.st small{color:var(--mute);font-size:13px;display:block}
+.st b{font-size:21px;letter-spacing:-.01em}
+h2{font-size:15px;color:var(--mute);font-weight:600;margin:0 0 8px 4px}
+.item{background:var(--card);border-radius:16px;padding:13px 15px;margin-bottom:9px;width:100%;border:0;text-align:left;color:inherit;font:inherit;display:block}
+.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.rl{display:flex;align-items:center;gap:8px;min-width:0}
+.d{font-weight:600;white-space:nowrap}
+.tag{flex:none;font-size:12.5px;border-radius:7px;padding:2px 8px;background:var(--acc2);color:var(--acc);font-weight:600;white-space:nowrap}
+.sv{flex:none;font-weight:600;white-space:nowrap}
+.m{color:var(--mute);font-size:14px;margin-top:4px;overflow-wrap:anywhere}
+.nums{display:flex;gap:6px 16px;margin-top:8px;font-size:14px;flex-wrap:wrap}
+.nums div{white-space:nowrap}.nums b{font-weight:600}
+.empty{text-align:center;color:var(--mute);padding:30px 12px;line-height:1.5}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:5;padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));background:var(--bg);background:color-mix(in srgb,var(--bg) 86%,transparent);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line)}
+.fab{display:block;width:100%;max-width:600px;margin:0 auto;background:var(--acc);color:#fff;border:0;border-radius:14px;padding:15px;font:inherit;font-weight:600}
+@media (prefers-color-scheme:dark){.fab{color:#0b1a17}}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:flex-end;justify-content:center;z-index:20;cursor:pointer}
+.ov.show{display:flex}
+.sheet{cursor:auto;background:var(--bg);width:100%;max-width:600px;border-radius:22px 22px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom,0px));max-height:90vh;max-height:90dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(40px);opacity:.5}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:0 auto 12px}
+.sheet h3{margin:0 0 12px;font-size:21px}
+label{display:block;font-size:13px;color:var(--mute);margin:0 0 3px 2px}
+.f{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+.f>div{min-width:0}
+.f .full{grid-column:1/-1}
+input,select{width:100%;font:inherit;font-size:17px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:10px;min-height:46px}
+input[type=date]{-webkit-appearance:none;appearance:none;display:block;min-width:0;max-width:100%;height:46px;text-align:left}
+input[type=date]::-webkit-date-and-time-value{text-align:left;min-height:1.2em}
+.calc{background:var(--acc2);border-radius:12px;padding:11px 13px;margin:12px 0;font-size:14.5px;display:flex;justify-content:space-between;gap:6px;flex-wrap:wrap}
+.calc b{color:var(--acc)}
+.btns{display:flex;gap:10px}
+.btns button{flex:1;border:0;border-radius:13px;padding:15px;font:inherit;font-weight:600}
+.save{background:var(--acc);color:#fff}
+@media (prefers-color-scheme:dark){.save{color:#0b1a17}}
+.cancel{background:var(--line);color:var(--ink)}
+.del{background:none;color:var(--warn);margin-top:8px;width:100%;border:0;padding:12px;font:inherit}
+.menu button{display:block;width:100%;text-align:left;background:var(--card);color:var(--ink);border:0;border-radius:13px;padding:15px;margin-bottom:8px;font:inherit}
+.menu .dng{color:var(--warn)}
+.hint{color:var(--mute);font-size:13.5px;margin:4px 2px 14px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(100px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:22px;font-size:15px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30;max-width:90%;text-align:center}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Учёт топлива</h1><button class="more" id="more" aria-label="Данные и импорт">⋯</button></div>
+  <div class="seg" id="seg"></div>
+  <div class="hero"><small>Средний расход</small><div class="big" id="avgC">—<span>л/100 км</span></div></div>
+  <div class="grid" id="stats"></div>
+  <h2>Заправки</h2>
+  <div id="list"></div>
+</div>
+<div class="bar"><button class="fab" id="add">+ Заправка</button></div>
+
+<div class="ov" id="ov"><div class="sheet">
+  <div class="grab"></div>
+  <h3 id="sh">Новая заправка</h3>
+  <div class="f">
+    <div><label>Дата</label><input type="date" id="fd"></div>
+    <div><label>Тип топлива</label><select id="ft"><option>Газ</option><option>Бензин</option><option>Дизель</option></select></div>
+    <div class="full"><label>АЗС</label><input id="fs" list="azs" placeholder="Например, WOG"><datalist id="azs"><option>WOG</option><option>ОККО</option><option>УКРНАФТА</option><option>Brent oil</option><option>SOCAR</option><option>KLO</option></datalist></div>
+    <div><label>Цена за 1 л (грн)</label><input id="fp" inputmode="decimal"></div>
+    <div><label>Количество миль</label><input id="fm" inputmode="decimal"></div>
+    <div><label>Количество топлива (л)</label><input id="fl" inputmode="decimal"></div>
+    <div><label>Сумма (грн)</label><input id="fsum" inputmode="decimal"></div>
+  </div>
+  <div class="calc" id="calc"></div>
+  <div class="btns"><button class="cancel" id="cn">Отмена</button><button class="save" id="sv">Сохранить</button></div>
+  <button class="del" id="dl" style="display:none">Удалить запись</button>
+</div></div>
+
+<div class="ov" id="ovd"><div class="sheet">
+  <div class="grab"></div>
+  <h3>Данные</h3>
+  <div class="menu">
+    <button id="bx">Импортировать из Excel (.xlsx)</button>
+    <button id="bk">Сохранить копию</button>
+    <button id="rs">Загрузить копию</button>
+    <button id="copy">Скопировать CSV</button>
+    <button id="clr" class="dng">Удалить все записи</button>
+  </div>
+  <p class="hint">Импорт: выберите файл .xlsx из «Файлов». Столбцы как в вашей таблице: дата, топливо, цена, мили, литры, сумма, АЗС в столбце J. Повторы пропускаются.</p>
+  <div class="btns"><button class="cancel" id="cd">Закрыть</button></div>
+</div></div>
+<input type="file" id="fx" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden>
+<input type="file" id="fi" accept=".json,application/json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+var KM=1.6, KEY="fuel.v3", filter="Все", editId=null, sumTouched=false, sy=0;
+var data=load();
+function load(){try{var s=localStorage.getItem(KEY);if(s){var a=JSON.parse(s);if(Array.isArray(a))return a}}catch(e){}return []}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
+var $=function(i){return document.getElementById(i)};
+var n=function(v){var x=parseFloat(String(v).replace(",","."));return isNaN(x)?0:x};
+var fmt=function(v,d){return v.toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d})};
+var dmy=function(s){var p=s.split("-");return p[2]+"."+p[1]+"."+p[0]};
+function calc(e){var km=e.miles*KM;return {km:km,cons:km?e.liters/km*100:0,c100:km?e.sum/km*100:0}}
+function toast(t){var el=$("toast");el.textContent=t;el.className="toast show";setTimeout(function(){el.className="toast"},2400)}
+
+function render(){
+  var types=["Все","Газ","Бензин","Дизель"].filter(function(t){return t==="Все"||data.some(function(e){return e.type===t})});
+  if(types.indexOf(filter)<0)filter="Все";
+  $("seg").innerHTML=types.map(function(t){return '<button class="'+(t===filter?"on":"")+'" data-t="'+t+'">'+t+'</button>'}).join("");
+  var rows=data.filter(function(e){return filter==="Все"||e.type===filter}).sort(function(a,b){return a.date<b.date?1:a.date>b.date?-1:0});
+  var L=0,S=0,K=0,LA=0,SA=0,KA=0;
+  rows.forEach(function(e){LA+=e.liters;SA+=e.sum;KA+=e.miles*KM;if(e.miles>0&&e.liters>0&&e.sum>0){L+=e.liters;S+=e.sum;K+=e.miles*KM}});
+  var cons=K?L/K*100:0,c100=K?S/K*100:0;
+  $("avgC").innerHTML=(K?fmt(cons,2):"—")+'<span>л/100 км</span>';
+  $("stats").innerHTML=[["Цена 100 км",K?fmt(c100,2)+" ₴":"—"],["Всего потрачено",fmt(SA,2)+" ₴"],["Пройдено",fmt(KA,1)+" км"],["Заправлено",fmt(LA,1)+" л"]].map(function(x){return '<div class="st"><small>'+x[0]+'</small><b>'+x[1]+'</b></div>'}).join("");
+  $("list").innerHTML=rows.length?rows.map(function(e){var c=calc(e);
+    return '<button class="item" data-id="'+e.id+'"><div class="row"><span class="rl"><span class="d">'+dmy(e.date)+'</span><span class="tag">'+e.type+'</span></span><span class="sv">'+fmt(e.sum,2)+' ₴</span></div><div class="m">'+(e.station||"АЗС не указана")+' · '+(e.price>0?fmt(e.price,2)+' ₴/л':'цена не указана')+' · '+fmt(e.liters,2)+' л</div>'+(c.km>0&&e.sum>0?'<div class="nums"><div><b>'+fmt(c.km,1)+'</b> км</div><div><b>'+fmt(c.cons,2)+'</b> л/100 км</div><div><b>'+fmt(c.c100,2)+'</b> ₴/100 км</div></div>':'<div class="nums" style="color:var(--warn)">Нет данных о пробеге или сумме</div>')+'</button>'}).join(""):'<div class="empty">Записей пока нет.<br>Нажмите «⋯» вверху справа и выберите «Импортировать из Excel» или добавьте первую заправку кнопкой «+ Заправка».</div>';
+}
+
+function lock(){if(!document.body.classList.contains("lock")){sy=window.scrollY;document.body.style.top=-sy+"px";document.body.classList.add("lock")}}
+function unlock(){if(document.body.classList.contains("lock")){document.body.classList.remove("lock");document.body.style.top="";window.scrollTo(0,sy)}}
+function show(id){$(id).className="ov show";lock()}
+function closeAll(){$("ov").className="ov";$("ovd").className="ov";unlock()}
+["ov","ovd"].forEach(function(i){$(i).addEventListener("click",function(ev){if(ev.target===this)closeAll()})});
+
+function upd(){
+  var p=n($("fp").value),l=n($("fl").value);
+  if(!sumTouched&&p&&l)$("fsum").value=(Math.round(p*l*100)/100).toString();
+  var e={miles:n($("fm").value),liters:l,sum:n($("fsum").value)},c=calc(e);
+  $("calc").innerHTML='<span>Км: <b>'+fmt(c.km,1)+'</b></span><span>Расход: <b>'+fmt(c.cons,2)+'</b> л/100</span><span>100 км: <b>'+fmt(c.c100,2)+'</b> ₴</span>';
+}
+function openSheet(id){
+  editId=id||null;var e=id?data.filter(function(x){return x.id===id})[0]:null;
+  $("sh").textContent=e?"Редактировать":"Новая заправка";
+  $("fd").value=e?e.date:new Date().toISOString().slice(0,10);
+  $("ft").value=e?e.type:(filter!=="Все"?filter:"Газ");
+  $("fs").value=e?e.station:"";$("fp").value=e&&e.price?e.price:"";$("fm").value=e&&e.miles?e.miles:"";$("fl").value=e?e.liters:"";$("fsum").value=e?e.sum:"";
+  sumTouched=!!e&&Math.abs(e.sum-e.price*e.liters)>0.05;
+  $("dl").style.display=e?"block":"none";upd();show("ov");
+}
+["fp","fm","fl"].forEach(function(i){$(i).addEventListener("input",upd)});
+$("fsum").addEventListener("input",function(){sumTouched=true;upd()});
+$("add").onclick=function(){openSheet()};
+$("more").onclick=function(){show("ovd")};
+$("cn").onclick=closeAll;$("cd").onclick=closeAll;
+$("sv").onclick=function(){
+  var e={id:editId||("e"+Date.now()),date:$("fd").value,type:$("ft").value,station:$("fs").value.trim(),price:n($("fp").value),miles:n($("fm").value),liters:n($("fl").value),sum:n($("fsum").value)};
+  if(!e.date||!e.liters){toast("Заполните дату и литры");return}
+  if(!e.sum)e.sum=Math.round(e.price*e.liters*100)/100;
+  if(editId){data=data.map(function(x){return x.id===editId?e:x})}else data.push(e);
+  save();closeAll();render();toast("Сохранено");
+};
+$("dl").onclick=function(){if(confirm("Удалить эту запись?")){data=data.filter(function(x){return x.id!==editId});save();closeAll();render();toast("Удалено")}};
+$("seg").onclick=function(ev){var t=ev.target.getAttribute("data-t");if(t){filter=t;render()}};
+$("list").onclick=function(ev){var b=ev.target.closest(".item");if(b)openSheet(b.getAttribute("data-id"))};
+
+/*XLSX*/
+function dec(s){return s.replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&apos;/g,"'").replace(/&#(\d+);/g,function(_,d){return String.fromCharCode(+d)}).replace(/&amp;/g,"&")}
+async function unzip(buf){
+  var dv=new DataView(buf),u8=new Uint8Array(buf),e=u8.length-22;
+  while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;
+  if(e<0)throw new Error("zip");
+  var cnt=dv.getUint16(e+10,true),off=dv.getUint32(e+16,true),files={},td=new TextDecoder();
+  for(var i=0;i<cnt;i++){
+    var nl=dv.getUint16(off+28,true),xl=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true);
+    files[td.decode(u8.subarray(off+46,off+46+nl))]={m:dv.getUint16(off+10,true),c:dv.getUint32(off+20,true),h:dv.getUint32(off+42,true)};
+    off+=46+nl+xl+cl;
+  }
+  return {files:files,read:async function(name){
+    var f=files[name];if(!f)return null;
+    var st=f.h+30+dv.getUint16(f.h+26,true)+dv.getUint16(f.h+28,true),data=u8.subarray(st,st+f.c);
+    if(f.m===0)return td.decode(data);
+    return await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"))).text();
+  }};
+}
+function tx(x){return dec((x.match(/<t\b[^>]*>[\s\S]*?<\/t>/g)||[]).map(function(t){return t.replace(/<[^>]+>/g,"")}).join(""))}
+function pnum(v){if(v==null)return 0;if(typeof v==="object"){if(v.d){var x=new Date(Math.round((v.n-25569)*864e5));return parseFloat(x.getUTCDate()+"."+("0"+(x.getUTCMonth()+1)).slice(-2))}return v.n||0}return n(v)}
+function pdate(v){if(v==null)return"";if(typeof v==="object"){if(!(v.n>1))return"";return new Date(Math.round((v.n-25569)*864e5)).toISOString().slice(0,10)}
+  var q=String(v).trim().split(/[.,\/\- ]+/);if(q.length<3)return"";var d=+q[0],m=+q[1],y=+q[2];if(y<100)y+=2000;if(!d||!m||!y)return"";return y+"-"+("0"+m).slice(-2)+"-"+("0"+d).slice(-2)}
+async function readXlsx(buf){
+  var z=await unzip(buf),sheet=Object.keys(z.files).filter(function(k){return /^xl\/worksheets\/sheet\d+\.xml$/.test(k)}).sort()[0];
+  if(!sheet)throw new Error("sheet");
+  var ss=[],sx=await z.read("xl/sharedStrings.xml");
+  if(sx)(sx.match(/<si\b[\s\S]*?<\/si>/g)||[]).forEach(function(si){ss.push(tx(si))});
+  var st=(await z.read("xl/styles.xml"))||"",cu={},isD=[];
+  (st.match(/<numFmt\b[^>]*>/g)||[]).forEach(function(x){var i=/numFmtId="(\d+)"/.exec(x),c=/formatCode="([^"]*)"/.exec(x);if(i&&c)cu[i[1]]=dec(c[1])});
+  var cx=/<cellXfs\b[\s\S]*?<\/cellXfs>/.exec(st);
+  if(cx)(cx[0].match(/<xf\b[^>]*>/g)||[]).forEach(function(x){var m=/numFmtId="(\d+)"/.exec(x),id=m?+m[1]:0,d=(id>=14&&id<=22)||(id>=27&&id<=36)||(id>=45&&id<=47)||(id>=50&&id<=58);if(cu[id])d=/[dmy]/i.test(cu[id].replace(/"[^"]*"|\[[^\]]*\]/g,""));isD.push(d)});
+  var xml=await z.read(sheet),rows={};
+  (xml.match(/<c\b[^>]*?(?:\/>|>[\s\S]*?<\/c>)/g)||[]).forEach(function(c){
+    var a=/\br="([A-Z]+)(\d+)"/.exec(c);if(!a)return;
+    var s=/\bs="(\d+)"/.exec(c),t=/\bt="(\w+)"/.exec(c),v=/<v>([\s\S]*?)<\/v>/.exec(c),val=null;
+    if(t&&t[1]==="inlineStr")val=tx(c);
+    else if(v){if(t&&t[1]==="s")val=ss[+v[1]];else if(t&&(t[1]==="str"||t[1]==="e"))val=dec(v[1]);else val={n:parseFloat(v[1]),d:!!(s&&isD[+s[1]])}}
+    if(val===null)return;
+    (rows[+a[2]]=rows[+a[2]]||{})[a[1]]=val});
+  var out=[];
+  Object.keys(rows).map(Number).sort(function(x,y){return x-y}).forEach(function(rn){
+    if(rn<2)return;var r=rows[rn],d=pdate(r.A),l=pnum(r.E),s=pnum(r.F);
+    if(!d||(!l&&!s))return;
+    var stn=String(r.J==null?"":r.J).trim();if(stn.indexOf("‼")>=0)stn="";
+    out.push({id:"x"+rn+"_"+Math.random().toString(36).slice(2,7),date:d,type:String(r.B==null?"":r.B).trim()||"Газ",price:pnum(r.C),miles:pnum(r.D),liters:l,sum:s,station:stn})});
+  return out;
+}
+/*END*/
+
+$("more").addEventListener("click",function(){});
+$("bx").onclick=function(){$("fx").click()};
+$("fx").onchange=async function(){
+  var f=this.files[0];this.value="";if(!f)return;
+  try{
+    var list=await readXlsx(await f.arrayBuffer());
+    if(!list.length){toast("В файле не найдено заправок");return}
+    var key=function(e){return [e.date,e.type,e.liters,e.sum].join("|")},have={};
+    data.forEach(function(e){have[key(e)]=1});
+    var add=list.filter(function(e){if(have[key(e)])return false;have[key(e)]=1;return true});
+    data=data.concat(add);save();closeAll();render();
+    toast("Добавлено: "+add.length+(list.length>add.length?", повторов пропущено: "+(list.length-add.length):""));
+  }catch(e){toast("Не удалось прочитать файл .xlsx")}
+};
+$("bk").onclick=function(){
+  var txt=JSON.stringify({app:"fuel",v:3,data:data}),name="fuel-backup-"+new Date().toISOString().slice(0,10)+".json";
+  try{var f=new File([txt],name,{type:"application/json"});if(navigator.canShare&&navigator.canShare({files:[f]})){navigator.share({files:[f]}).catch(function(){});return}}catch(e){}
+  try{var a=document.createElement("a");a.href=URL.createObjectURL(new Blob([txt],{type:"application/json"}));a.download=name;document.body.appendChild(a);a.click();a.remove();toast("Копия сохранена");return}catch(e){}
+  try{navigator.clipboard.writeText(txt);toast("Копия скопирована в буфер")}catch(e){toast("Не удалось сохранить")}
+};
+$("rs").onclick=function(){$("fi").click()};
+$("fi").onchange=function(){var f=this.files[0];this.value="";if(!f)return;var r=new FileReader();r.onload=function(){try{var o=JSON.parse(r.result),a=Array.isArray(o)?o:o.data;if(!Array.isArray(a)||!a.every(function(x){return x&&x.date&&x.type}))throw 0;if(confirm("Заменить текущие записи ("+data.length+") копией ("+a.length+")?")){data=a.map(function(x,i){return {id:x.id||"r"+i,date:x.date,type:x.type,price:+x.price||0,miles:+x.miles||0,liters:+x.liters||0,sum:+x.sum||0,station:x.station||""}});save();closeAll();render();toast("Восстановлено")}}catch(e){toast("Файл не подходит")}};r.readAsText(f)};
+$("copy").onclick=function(){
+  var h="Дата;Тип топлива;Цена за 1 л (грн);Количество миль;Количество топлива (л);Сумма (грн);Км;Расход на 100 км;Цена 100 км (грн);АЗС";
+  var t=[h].concat(data.slice().sort(function(a,b){return a.date<b.date?-1:1}).map(function(e){var c=calc(e);return [dmy(e.date),e.type,e.price,e.miles,e.liters,e.sum,c.km.toFixed(2),c.cons.toFixed(4),c.c100.toFixed(2),e.station].join(";")})).join("\n");
+  try{navigator.clipboard.writeText(t).then(function(){toast("CSV скопирован")},function(){toast("Не удалось скопировать")})}catch(e){toast("Не удалось скопировать")}
+};
+$("clr").onclick=function(){if(data.length&&confirm("Удалить все записи ("+data.length+")? Это нельзя отменить. Сначала лучше сохранить копию.")){data=[];save();closeAll();render();toast("Все записи удалены")}};
+try{if("serviceWorker" in navigator&&/^https?:$/.test(location.protocol))navigator.serviceWorker.register("sw.js").catch(function(){})}catch(e){}
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist()}catch(e){}
+render();
+</script>
+</body>
+</html>
